@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1006769400672",
+    "project_id": "memora-caps",
+    "storage_bucket": "memora-caps.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1006769400672:android:f0cccb7f90b3621a42cc05",
+        "android_client_info": {
+          "package_name": "com.example.memora_caps"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfRFqB8Ex-Rzt7XCWVYZz1hbwXvX7GWQU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
