@@ -10,6 +10,7 @@ class UserProfile {
   final String yearLevel;
   final String email;
   final String photoUrl;
+  final String photoData;
   final String avatar;
   final DateTime createdAt;
 
@@ -21,6 +22,7 @@ class UserProfile {
     required this.yearLevel,
     required this.email,
     this.photoUrl = '',
+    this.photoData = '',
     this.avatar = '👩‍🎓',
     required this.createdAt,
   });
@@ -34,6 +36,7 @@ class UserProfile {
       yearLevel: map['yearLevel'] ?? '',
       email: map['email'] ?? '',
       photoUrl: map['photoUrl'] ?? '',
+      photoData: map['photoData'] ?? '',
       avatar: map['avatar'] ?? '👩‍🎓',
       createdAt: (map['createdAt'] is Timestamp)
           ? (map['createdAt'] as Timestamp).toDate()
@@ -49,6 +52,7 @@ class UserProfile {
       'yearLevel': yearLevel,
       'email': email,
       'photoUrl': photoUrl,
+      'photoData': photoData,
       'avatar': avatar,
       'createdAt': Timestamp.fromDate(createdAt),
     };

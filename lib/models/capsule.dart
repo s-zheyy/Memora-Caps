@@ -119,8 +119,4 @@ const Map<String, String> kMoodEmojis = {
   'excited': '🤩',
   'tired': '😴',
   'sad': '😔',
-  'frustrated': '😤',
-  'motivated': '🔥',
-  'confident': '💪',
-  'thoughtful': '💡',
 };

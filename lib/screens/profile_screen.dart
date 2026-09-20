@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../models/user_profile.dart';
 import '../services/auth_service.dart';
@@ -7,25 +10,6 @@ import 'login_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
-  // =========================
-  // PRE-MADE AVATAR CHOICES
-  // =========================
-
-  static const List<String> _avatars = [
-    '👩‍🎓',
-    '🧑‍💻',
-    '📚',
-    '🧠',
-    '🎨',
-    '🌱',
-    '⭐',
-    '🚀',
-    '📝',
-    '💡',
-    '🎯',
-    '🏆',
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -99,12 +83,13 @@ class ProfileScreen extends StatelessWidget {
                         CircleAvatar(
                           radius: 40,
                           backgroundColor: Colors.white24,
-                          child: Text(
-                            profile.avatar,
-                            style: const TextStyle(
-                              fontSize: 40,
-                            ),
-                          ),
+                          backgroundImage: _profileImage(profile),
+                            child: profile.photoData.isEmpty
+                              ? Text(
+                                  profile.avatar,
+                                  style: const TextStyle(fontSize: 40),
+                                )
+                              : null,
                         ),
 
                         Container(
@@ -238,7 +223,7 @@ class ProfileScreen extends StatelessWidget {
   }
 
   // =========================
-  // AVATAR SELECTION DIALOG
+  // PROFILE PHOTO SELECTION
   // =========================
 
   void _showAvatarDialog(
@@ -246,83 +231,73 @@ class ProfileScreen extends StatelessWidget {
     UserProfile profile,
     AuthService auth,
   ) {
-    showDialog(
+    showModalBottomSheet<void>(
       context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          title: const Text('Choose Your Avatar'),
-
-          content: SizedBox(
-            width: double.maxFinite,
-            child: GridView.builder(
-              shrinkWrap: true,
-              itemCount: _avatars.length,
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 10,
-                mainAxisSpacing: 10,
-              ),
-              itemBuilder: (context, index) {
-                final avatar = _avatars[index];
-                final isSelected = profile.avatar == avatar;
-
-                return GestureDetector(
-                  onTap: () async {
-                    await auth.updateProfile(
-                      UserProfile(
-                        uid: profile.uid,
-                        fullName: profile.fullName,
-                        studentId: profile.studentId,
-                        course: profile.course,
-                        yearLevel: profile.yearLevel,
-                        email: profile.email,
-                        photoUrl: profile.photoUrl,
-                        avatar: avatar,
-                        createdAt: profile.createdAt,
-                      ),
-                    );
-
-                    if (ctx.mounted) {
-                      Navigator.pop(ctx);
-                    }
-                  },
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.navyLight.withOpacity(0.15)
-                          : Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isSelected
-                            ? AppColors.navyDark
-                            : Colors.grey.shade300,
-                        width: isSelected ? 2 : 1,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        avatar,
-                        style: const TextStyle(
-                          fontSize: 32,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
+      builder: (ctx) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Choose from gallery'),
+              onTap: () async {
+                Navigator.pop(ctx);
+                await _pickProfilePhoto(context, profile, auth);
               },
             ),
-          ),
-
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+            ListTile(
+              leading: const Icon(Icons.close),
+              title: const Text('Cancel'),
+              onTap: () => Navigator.pop(ctx),
             ),
           ],
-        );
-      },
+        ),
+      ),
     );
+  }
+
+  Future<void> _pickProfilePhoto(
+    BuildContext context,
+    UserProfile profile,
+    AuthService auth,
+  ) async {
+    try {
+      final image = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 60,
+        maxWidth: 320,
+        maxHeight: 320,
+      );
+      if (image == null) return;
+
+      final photoData = await auth.encodeProfilePhoto(image);
+      await auth.updateProfile(
+        UserProfile(
+          uid: profile.uid,
+          fullName: profile.fullName,
+          studentId: profile.studentId,
+          course: profile.course,
+          yearLevel: profile.yearLevel,
+          email: profile.email,
+          photoUrl: '',
+          photoData: photoData,
+          avatar: profile.avatar,
+          createdAt: profile.createdAt,
+        ),
+      );
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not update profile photo.')),
+        );
+      }
+    }
+  }
+
+  ImageProvider<Object>? _profileImage(UserProfile profile) {
+    if (profile.photoData.isNotEmpty) {
+      return MemoryImage(base64Decode(profile.photoData));
+    }
+    return null;
   }
 
   // =========================
@@ -385,6 +360,7 @@ class ProfileScreen extends StatelessWidget {
                   yearLevel: yearCtrl.text.trim(),
                   email: profile.email,
                   photoUrl: profile.photoUrl,
+                        photoData: profile.photoData,
                   avatar: profile.avatar,
                   createdAt: profile.createdAt,
                 ),
@@ -420,18 +396,25 @@ class _InfoRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              fontSize: 13,
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                color: AppColors.textMuted,
+                fontSize: 13,
+              ),
             ),
           ),
-          Text(
-            value.isEmpty ? '—' : value,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
+          Expanded(
+            child: Text(
+              value.isEmpty ? '—' : value,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.right,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
             ),
           ),
         ],

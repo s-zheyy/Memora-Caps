@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
-import '../widgets/main_shell.dart';
+import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -50,7 +50,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           );
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const MainShell()),
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
         (route) => false,
       );
     } on FirebaseAuthException catch (e) {

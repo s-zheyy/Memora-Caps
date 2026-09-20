@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/user_profile.dart';
 
 /// Wraps FirebaseAuth + the "users" Firestore collection.
@@ -65,5 +68,9 @@ class AuthService extends ChangeNotifier {
 
   Future<void> updateProfile(UserProfile profile) async {
     await _db.collection('users').doc(profile.uid).update(profile.toMap());
+  }
+
+  Future<String> encodeProfilePhoto(XFile image) async {
+    return base64Encode(await image.readAsBytes());
   }
 }

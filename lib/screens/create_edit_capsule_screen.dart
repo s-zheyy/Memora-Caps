@@ -27,7 +27,7 @@ class _CreateEditCapsuleScreenState extends State<CreateEditCapsuleScreen> {
   // CHANGED ONLY FOR THE DROPDOWN
   String? _category;
 
-  String _mood = 'motivated';
+  String _mood = 'calm';
   DateTime _unlockDate = DateTime.now().add(const Duration(days: 30));
   bool _saving = false;
 

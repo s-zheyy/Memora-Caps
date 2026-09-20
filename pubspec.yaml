@@ -15,6 +15,7 @@ dependencies:
   firebase_core: ^2.27.0
   firebase_auth: ^4.17.4
   cloud_firestore: ^4.15.4
+  image_picker: ^1.0.7
 
   # State management
   provider: ^6.1.2
